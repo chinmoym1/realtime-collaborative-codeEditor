@@ -46,120 +46,120 @@ const Editor = forwardRef(
       }
     };
 
-    useEffect(() => {
-      async function init() {
-        editorRef.current = Codemirror.fromTextArea(
-          document.getElementById("realtimeEditor"),
-          {
-            mode: getMode(language || "javascript"),
-            theme: "dracula",
-            autoCloseTags: true,
-            autoCloseBrackets: true,
-            lineNumbers: true,
-            lineWrapping: true,
-          }
-        );
-
-        editorRef.current.on("change", (instance, changes) => {
-          const { origin } = changes;
-          const code = instance.getValue();
-          onCodeChange(code);
-          if (origin !== "setValue" && socketRef.current) {
-            socketRef.current.emit(ACTIONS.CODE_CHANGE, {
-              roomId,
-              code,
-            });
-          }
-        });
-      }
-
-      init();
-    }, [language, onCodeChange, roomId, socketRef]);
-
     // useEffect(() => {
-    //     async function init() {
-    //         editorRef.current = Codemirror.fromTextArea(
-    //             document.getElementById('realtimeEditor'),
-    //             {
-    //                 mode: getMode(language || 'javascript'),
-    //                 theme: 'dracula',
-    //                 autoCloseTags: true,
-    //                 autoCloseBrackets: true,
-    //                 lineNumbers: true,
-    //                 lineWrapping: true,
-    //             }
-    //         );
+    //   async function init() {
+    //     editorRef.current = Codemirror.fromTextArea(
+    //       document.getElementById("realtimeEditor"),
+    //       {
+    //         mode: getMode(language || "javascript"),
+    //         theme: "dracula",
+    //         autoCloseTags: true,
+    //         autoCloseBrackets: true,
+    //         lineNumbers: true,
+    //         lineWrapping: true,
+    //       }
+    //     );
 
-    //         editorRef.current.on('change',(instance, changes)=> {
-    //             const {origin} = changes;
-    //             const code = instance.getValue();
-    //             onCodeChange(code);
-    //             if(origin !== 'setValue'){
-    //                 socketRef.current.emit(ACTIONS.CODE_CHANGE,{
-    //                     roomId,
-    //                     code,
-    //                 });
-    //             }
+    //     editorRef.current.on("change", (instance, changes) => {
+    //       const { origin } = changes;
+    //       const code = instance.getValue();
+    //       onCodeChange(code);
+    //       if (origin !== "setValue" && socketRef.current) {
+    //         socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+    //           roomId,
+    //           code,
     //         });
-    //     }
-    //     init();
-    // }, []);  // The empty array ensures this effect runs only once when mounted
+    //       }
+    //     });
+    //   }
+
+    //   init();
+    // }, [language, onCodeChange, roomId, socketRef]);
 
     useEffect(() => {
-      const socket = socketRef.current; // ✅ Capture the ref value at effect time
+        async function init() {
+            editorRef.current = Codemirror.fromTextArea(
+                document.getElementById('realtimeEditor'),
+                {
+                    mode: getMode(language || 'javascript'),
+                    theme: 'dracula',
+                    autoCloseTags: true,
+                    autoCloseBrackets: true,
+                    lineNumbers: true,
+                    lineWrapping: true,
+                }
+            );
 
-      const handler = ({ code }) => {
-        if (code !== null && editorRef.current) {
-          editorRef.current.setValue(code);
+            editorRef.current.on('change',(instance, changes)=> {
+                const {origin} = changes;
+                const code = instance.getValue();
+                onCodeChange(code);
+                if(origin !== 'setValue'){
+                    socketRef.current.emit(ACTIONS.CODE_CHANGE,{
+                        roomId,
+                        code,
+                    });
+                }
+            });
         }
-      };
-
-      if (socket) {
-        socket.on(ACTIONS.CODE_CHANGE, handler);
-      }
-
-      return () => {
-        if (socket) {
-          socket.off(ACTIONS.CODE_CHANGE, handler);
-        }
-      };
-
-      // ✅ Silence ESLint warning correctly
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        init();
+    }, []);  // The empty array ensures this effect runs only once when mounted
 
     // useEffect(() => {
+    //   const socket = socketRef.current; // ✅ Capture the ref value at effect time
+
     //   const handler = ({ code }) => {
     //     if (code !== null && editorRef.current) {
     //       editorRef.current.setValue(code);
     //     }
     //   };
 
-    //   if (socketRef.current) {
-    //     socketRef.current.on(ACTIONS.CODE_CHANGE, handler);
+    //   if (socket) {
+    //     socket.on(ACTIONS.CODE_CHANGE, handler);
     //   }
 
     //   return () => {
-    //     if (socketRef.current) {
-    //       socketRef.current.off(ACTIONS.CODE_CHANGE, handler);
+    //     if (socket) {
+    //       socket.off(ACTIONS.CODE_CHANGE, handler);
     //     }
     //   };
-    // }, [socketRef]);
 
-    // useEffect(() => {
-    //   if (socketRef.current) {
-    //     socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-    //       if (code !== null) {
-    //         editorRef.current.setValue(code);
-    //         // editorRef.current.scrollTo(0, 0);
-    //       }
-    //     });
-    //   }
+    //   // ✅ Silence ESLint warning correctly
+    //   // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, []);
 
-    //   return () => {
-    //     socketRef.current.off(ACTIONS.CODE_CHANGE);
-    //   };
-    // }, [socketRef.current]);
+    useEffect(() => {
+      const handler = ({ code }) => {
+        if (code !== null && editorRef.current) {
+          editorRef.current.setValue(code);
+        }
+      };
+
+      if (socketRef.current) {
+        socketRef.current.on(ACTIONS.CODE_CHANGE, handler);
+      }
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.off(ACTIONS.CODE_CHANGE, handler);
+        }
+      };
+    }, [socketRef]);
+
+    useEffect(() => {
+      if (socketRef.current) {
+        socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+          if (code !== null) {
+            editorRef.current.setValue(code);
+            // editorRef.current.scrollTo(0, 0);
+          }
+        });
+      }
+
+      return () => {
+        socketRef.current.off(ACTIONS.CODE_CHANGE);
+      };
+    }, [socketRef.current]);
 
     // Update editor mode when language prop changes
     useEffect(() => {
