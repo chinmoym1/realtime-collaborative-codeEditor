@@ -1,38 +1,246 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.homePageWrapper {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
+  height: 90vh;
 }
 
-.App-link {
-  color: #61dafb;
+.formWrapper {
+  background: rgba(54, 56, 79, 0.94);
+  /* padding: 20px; */
+  border-radius: 10px;
+  width: 425px;
+  max-width: 90%;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.homeLogo {
+  width: 425px;
+  height: 100px;
+  border-radius: 5px;
+  max-width: 100%;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+}
+
+.inputGroup{
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.mainLabel{
+  margin-bottom: 0px;
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
+.inputBox{
+  padding: 10px;
+  border-radius: 5px;
+  outline: none;
+  border: none;
+  margin-bottom: 15px;
+  background: #eee;
+  font-size: 14px;
+  font-weight: bold;
+  color: #211f31;
+}
+
+.btn{
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  color: rgba(71, 10, 10, 0.918);
+}
+
+.aiReviewBtn {
+  background-color: #0a0f0be0;
+  color: #0e39e0;
+  padding:10px 16px;
+  border-radius:5px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+  margin-left: 8px;
+  border: 2px solid #3f0eee;
+
+}
+
+.aiReviewBtn:hover:not(:disabled) {
+  background-color: #141259ed;
+}
+
+.aiReviewBtn:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+.joinBtn{
+  background-color: green;
+  width: 100px;
+  margin-left: 38%;
+  /* letter-spacing: 2px; */
+  font-family:Arial, Helvetica, sans-serif;
+}
+.joinBtn:hover, .leaveBtn:hover{
+  background-color: #1e5520;
+}
+
+.createInfo{
+  margin: 0 auto;
+  margin-top: 20px;
+}
+.createNewBtn{
+  color:rgb(74, 253, 15);
+  text-decoration: none;
+  border-bottom: 1px solid rgb(18, 212, 18) ;
+  transition: all 0.3s ease-in-out;
+}
+.createNewBtn:hover{
+  color:rgb(3, 131, 3);
+  border-color: rgb(15, 121, 1);
+
+}
+
+.mainWrap{
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  height: 100vh;
+
+}
+.aside{
+  background: #211f31;
+  padding: 15px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+
+}
+.asideInner{
+  flex:1;
+  display: flex;
+  flex-direction: column;
+}
+.clientsList{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+
+}
+.client{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  font-weight: bold;
+}
+.username{
+  margin-top: 10px;
+}
+.copyBtn{
+  background-color: rgb(93, 167, 167);
+  margin-top: auto;
+}
+.copyBtn:hover{
+  background-color: rgb(19, 95, 95);
+}
+
+.leaveBtn{
+  background-color: green;
+  margin-top: 20px;
+}
+.editorlogo{
+  border-bottom: 1px solid #777a7d;
+  padding-bottom: 10px;
+}
+.logo{
+  height: 80px;
+  width: 250px;
+  max-width: 100%;
+  border-radius: 5px;
+}
+
+/* .CodeMirror{
+  min-height: calc(100vh- 20px);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-top: 20px;
+  background-repeat: no-repeat;
+} */
+.CodeMirror.cm-s-dracula {
+  font-size: 16px;
+  line-height: 1.6;
+  padding-top: 20px;
+  /* min-height: 100vh; */
+  height: 100%;
+}
+
+/* Add padding to CodeMirror scroll area to prevent content hiding behind fixed header */
+.CodeMirror-scroll {
+  /* padding-top: 50px !important; */
+  box-sizing: border-box;
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  height: 40px;
+  background-color: #211f31;
+  z-index: 1000;
+}
+
+
+.editorWrap {
+  height: calc(100vh - 5px);
+  overflow-y: auto;
+  padding-top: 0;
+  box-sizing: border-box;
+}
+
+#languageSelector {
+  background-color: #0a083ccc;
+  text-align: center;
+  font-weight: bold;
+  color: #eb752f;
+  border: 2px solid #eb752f;
+  border-radius: 7px;
+}
+
+/* Responsive styles for mobile devices */
+@media (max-width: 768px) {
+  .mainWrap {
+    grid-template-columns: 1fr;
   }
-  to {
-    transform: rotate(360deg);
+  .aside {
+    width: 100%;
+    height: auto;
+  }
+  .editorWrap {
+    height: calc(100vh - 50px);
+    padding-top: 50px;
+  }
+  .joinBtn {
+    width: 80%;
+    margin-left: 0;
+  }
+  .formWrapper {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px;
+  }
+  .homeLogo {
+    width: 100%;
+    height: auto;
   }
 }
