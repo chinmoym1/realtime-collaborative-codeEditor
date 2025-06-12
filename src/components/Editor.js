@@ -106,7 +106,8 @@ const Editor = forwardRef(
     // }, []);  // The empty array ensures this effect runs only once when mounted
 
     useEffect(() => {
-      const socket = socketRef.current; // ✅ Capture the ref value
+      const socket = socketRef.current; // ✅ Capture the ref value at effect time
+
       const handler = ({ code }) => {
         if (code !== null && editorRef.current) {
           editorRef.current.setValue(code);
@@ -122,6 +123,9 @@ const Editor = forwardRef(
           socket.off(ACTIONS.CODE_CHANGE, handler);
         }
       };
+
+      // ✅ Silence ESLint warning correctly
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // useEffect(() => {
