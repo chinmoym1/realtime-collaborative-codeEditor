@@ -4,7 +4,7 @@ import Editor from "../components/Editor";
 import { initSocket } from "../socket";
 import ACTIONS from "../Actions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Navigate,
@@ -43,7 +43,6 @@ const EditorPage = () => {
         username: location.state?.username,
       });
 
-      // Listening for joined event
       socketRef.current.on(
         ACTIONS.JOINED,
         ({ clients, username, socketId }) => {
@@ -59,7 +58,6 @@ const EditorPage = () => {
         }
       );
 
-      // Listening for current language event
       socketRef.current.on(ACTIONS.CURRENT_LANGUAGE, ({ language }) => {
         console.log("Received CURRENT_LANGUAGE event with language:", language);
         setLanguage(language);
@@ -76,24 +74,21 @@ const EditorPage = () => {
         }
       });
 
-      // Listening for language change event
       socketRef.current.on(ACTIONS.LANGUAGE_CHANGE, ({ language }) => {
         console.log("Received LANGUAGE_CHANGE event with language:", language);
         setLanguage(language);
       });
 
-      // Listening for disconnected
       socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
         toast.success(`${username} left the room.`);
-        setClients((prev) => {
-          return prev.filter((client) => client.socketId !== socketId);
-        });
+        setClients((prev) =>
+          prev.filter((client) => client.socketId !== socketId)
+        );
       });
-
-      socketRef.current.on("connect_error", (err) => handleErrors(err));
-      socketRef.current.on("connect_failed", (err) => handleErrors(err));
     };
+
     init();
+
     return () => {
       socketRef.current.disconnect();
       socketRef.current.off(ACTIONS.JOINED);
@@ -101,7 +96,84 @@ const EditorPage = () => {
       socketRef.current.off(ACTIONS.LANGUAGE_CHANGE);
       socketRef.current.off(ACTIONS.CURRENT_LANGUAGE);
     };
-  }, []);
+  }, [roomId, reactNavigator, location.state?.username]); // ✅ ADD DEPENDENCIES HERE
+
+  // useEffect(() => {
+  //   const init = async () => {
+  //     socketRef.current = await initSocket();
+  //     socketRef.current.on("connect_error", (err) => handleErrors(err));
+  //     socketRef.current.on("connect_failed", (err) => handleErrors(err));
+
+  //     function handleErrors(e) {
+  //       console.log("socket error", e);
+  //       toast.error("Socket connection failed, try again later.");
+  //       reactNavigator("/");
+  //     }
+
+  //     socketRef.current.emit(ACTIONS.JOIN, {
+  //       roomId,
+  //       username: location.state?.username,
+  //     });
+
+  //     // Listening for joined event
+  //     socketRef.current.on(
+  //       ACTIONS.JOINED,
+  //       ({ clients, username, socketId }) => {
+  //         if (username !== location.state?.username) {
+  //           toast.success(`${username} joined the room.`);
+  //           console.log(`${username} joined`);
+  //         }
+  //         setClients(clients);
+  //         socketRef.current.emit(ACTIONS.SYNC_CODE, {
+  //           code: codeRef.current,
+  //           socketId,
+  //         });
+  //       }
+  //     );
+
+  //     // Listening for current language event
+  //     socketRef.current.on(ACTIONS.CURRENT_LANGUAGE, ({ language }) => {
+  //       console.log("Received CURRENT_LANGUAGE event with language:", language);
+  //       setLanguage(language);
+  //     });
+
+  //     socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+  //       console.log(
+  //         "Received CODE_CHANGE event with code length:",
+  //         code?.length
+  //       );
+  //       if (editorRef.current) {
+  //         editorRef.current.setCode(code);
+  //         codeRef.current = code;
+  //       }
+  //     });
+
+  //     // Listening for language change event
+  //     socketRef.current.on(ACTIONS.LANGUAGE_CHANGE, ({ language }) => {
+  //       console.log("Received LANGUAGE_CHANGE event with language:", language);
+  //       setLanguage(language);
+  //     });
+
+  //     // Listening for disconnected
+  //     socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
+  //       toast.success(`${username} left the room.`);
+  //       setClients((prev) => {
+  //         return prev.filter((client) => client.socketId !== socketId);
+  //       });
+  //     });
+
+  //     socketRef.current.on("connect_error", (err) => handleErrors(err));
+  //     socketRef.current.on("connect_failed", (err) => handleErrors(err));
+  //   };
+  //   init();
+  //   return () => {
+  //     socketRef.current.disconnect();
+  //     socketRef.current.off(ACTIONS.JOINED);
+  //     socketRef.current.off(ACTIONS.DISCONNECTED);
+  //     socketRef.current.off(ACTIONS.LANGUAGE_CHANGE);
+  //     socketRef.current.off(ACTIONS.CURRENT_LANGUAGE);
+  //   };
+  // }, []);
 
   // Removed joinedLanguage related useEffect and state as it is no longer used
 
