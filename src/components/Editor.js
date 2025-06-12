@@ -106,22 +106,41 @@ const Editor = forwardRef(
     // }, []);  // The empty array ensures this effect runs only once when mounted
 
     useEffect(() => {
+      const socket = socketRef.current; // ✅ Capture the ref value
       const handler = ({ code }) => {
         if (code !== null && editorRef.current) {
           editorRef.current.setValue(code);
         }
       };
 
-      if (socketRef.current) {
-        socketRef.current.on(ACTIONS.CODE_CHANGE, handler);
+      if (socket) {
+        socket.on(ACTIONS.CODE_CHANGE, handler);
       }
 
       return () => {
-        if (socketRef.current) {
-          socketRef.current.off(ACTIONS.CODE_CHANGE, handler);
+        if (socket) {
+          socket.off(ACTIONS.CODE_CHANGE, handler);
         }
       };
-    }, [socketRef]);
+    }, []);
+
+    // useEffect(() => {
+    //   const handler = ({ code }) => {
+    //     if (code !== null && editorRef.current) {
+    //       editorRef.current.setValue(code);
+    //     }
+    //   };
+
+    //   if (socketRef.current) {
+    //     socketRef.current.on(ACTIONS.CODE_CHANGE, handler);
+    //   }
+
+    //   return () => {
+    //     if (socketRef.current) {
+    //       socketRef.current.off(ACTIONS.CODE_CHANGE, handler);
+    //     }
+    //   };
+    // }, [socketRef]);
 
     // useEffect(() => {
     //   if (socketRef.current) {
