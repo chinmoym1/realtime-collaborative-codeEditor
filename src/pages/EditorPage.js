@@ -1,19 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import axios from "axios";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  Navigate,
+} from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faWandMagicSparkles,
+  faBars,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
+
 import Client from "../components/Client";
 import Editor from "../components/Editor";
 import { initSocket } from "../socket";
 import ACTIONS from "../Actions";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faWandMagicSparkles } from "@fortawesome/free-solid-svg-icons";
-
-import {
-  Navigate,
-  useLocation,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
-import toast from "react-hot-toast";
-import axios from "axios";
+import "./EditorPage.css";
 
 const EditorPage = () => {
   const socketRef = useRef(null);
@@ -22,9 +27,11 @@ const EditorPage = () => {
   const location = useLocation();
   const { roomId } = useParams();
   const reactNavigator = useNavigate();
+
   const [clients, setClients] = useState([]);
+  const [language, setLanguage] = useState("javascript"); // Default language
   const [loadingReview, setLoadingReview] = useState(false);
-  const [language, setLanguage] = useState(""); // Initialize with empty string to ensure update
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -33,7 +40,7 @@ const EditorPage = () => {
       socketRef.current.on("connect_failed", (err) => handleErrors(err));
 
       function handleErrors(e) {
-        console.log("socket error", e);
+        console.error("Socket error", e);
         toast.error("Socket connection failed, try again later.");
         reactNavigator("/");
       }
@@ -48,7 +55,6 @@ const EditorPage = () => {
         ({ clients, username, socketId }) => {
           if (username !== location.state?.username) {
             toast.success(`${username} joined the room.`);
-            console.log(`${username} joined`);
           }
           setClients(clients);
           socketRef.current.emit(ACTIONS.SYNC_CODE, {
@@ -59,28 +65,22 @@ const EditorPage = () => {
       );
 
       socketRef.current.on(ACTIONS.CURRENT_LANGUAGE, ({ language }) => {
-        console.log("Received CURRENT_LANGUAGE event with language:", language);
         setLanguage(language);
       });
 
       socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-        console.log(
-          "Received CODE_CHANGE event with code length:",
-          code?.length
-        );
         if (editorRef.current) {
-          editorRef.current.setCode(code);
+          editorRef.current.setCode(code || "");
           codeRef.current = code;
         }
       });
 
       socketRef.current.on(ACTIONS.LANGUAGE_CHANGE, ({ language }) => {
-        console.log("Received LANGUAGE_CHANGE event with language:", language);
         setLanguage(language);
       });
 
       socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
-        toast.success(`${username} left the room.`);
+        toast.error(`${username} left the room.`);
         setClients((prev) =>
           prev.filter((client) => client.socketId !== socketId)
         );
@@ -90,99 +90,22 @@ const EditorPage = () => {
     init();
 
     return () => {
-      socketRef.current.disconnect();
-      socketRef.current.off(ACTIONS.JOINED);
-      socketRef.current.off(ACTIONS.DISCONNECTED);
-      socketRef.current.off(ACTIONS.LANGUAGE_CHANGE);
-      socketRef.current.off(ACTIONS.CURRENT_LANGUAGE);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current.off(ACTIONS.JOINED);
+        socketRef.current.off(ACTIONS.DISCONNECTED);
+        socketRef.current.off(ACTIONS.LANGUAGE_CHANGE);
+        socketRef.current.off(ACTIONS.CURRENT_LANGUAGE);
+      }
     };
-  }, [roomId, reactNavigator, location.state?.username]); // ✅ ADD DEPENDENCIES HERE
-
-  // useEffect(() => {
-  //   const init = async () => {
-  //     socketRef.current = await initSocket();
-  //     socketRef.current.on("connect_error", (err) => handleErrors(err));
-  //     socketRef.current.on("connect_failed", (err) => handleErrors(err));
-
-  //     function handleErrors(e) {
-  //       console.log("socket error", e);
-  //       toast.error("Socket connection failed, try again later.");
-  //       reactNavigator("/");
-  //     }
-
-  //     socketRef.current.emit(ACTIONS.JOIN, {
-  //       roomId,
-  //       username: location.state?.username,
-  //     });
-
-  //     // Listening for joined event
-  //     socketRef.current.on(
-  //       ACTIONS.JOINED,
-  //       ({ clients, username, socketId }) => {
-  //         if (username !== location.state?.username) {
-  //           toast.success(`${username} joined the room.`);
-  //           console.log(`${username} joined`);
-  //         }
-  //         setClients(clients);
-  //         socketRef.current.emit(ACTIONS.SYNC_CODE, {
-  //           code: codeRef.current,
-  //           socketId,
-  //         });
-  //       }
-  //     );
-
-  //     // Listening for current language event
-  //     socketRef.current.on(ACTIONS.CURRENT_LANGUAGE, ({ language }) => {
-  //       console.log("Received CURRENT_LANGUAGE event with language:", language);
-  //       setLanguage(language);
-  //     });
-
-  //     socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-  //       console.log(
-  //         "Received CODE_CHANGE event with code length:",
-  //         code?.length
-  //       );
-  //       if (editorRef.current) {
-  //         editorRef.current.setCode(code);
-  //         codeRef.current = code;
-  //       }
-  //     });
-
-  //     // Listening for language change event
-  //     socketRef.current.on(ACTIONS.LANGUAGE_CHANGE, ({ language }) => {
-  //       console.log("Received LANGUAGE_CHANGE event with language:", language);
-  //       setLanguage(language);
-  //     });
-
-  //     // Listening for disconnected
-  //     socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
-  //       toast.success(`${username} left the room.`);
-  //       setClients((prev) => {
-  //         return prev.filter((client) => client.socketId !== socketId);
-  //       });
-  //     });
-
-  //     socketRef.current.on("connect_error", (err) => handleErrors(err));
-  //     socketRef.current.on("connect_failed", (err) => handleErrors(err));
-  //   };
-  //   init();
-  //   return () => {
-  //     socketRef.current.disconnect();
-  //     socketRef.current.off(ACTIONS.JOINED);
-  //     socketRef.current.off(ACTIONS.DISCONNECTED);
-  //     socketRef.current.off(ACTIONS.LANGUAGE_CHANGE);
-  //     socketRef.current.off(ACTIONS.CURRENT_LANGUAGE);
-  //   };
-  // }, []);
-
-  // Removed joinedLanguage related useEffect and state as it is no longer used
+  }, [roomId, location.state?.username, reactNavigator]);
 
   async function copyRoomId() {
     try {
       await navigator.clipboard.writeText(roomId);
-      toast.success("Room ID has been copied to clipboard");
+      toast.success("Room ID copied to clipboard!");
     } catch (err) {
-      toast.error("Could not copy the Room ID");
+      toast.error("Could not copy the Room ID.");
       console.error(err);
     }
   }
@@ -193,7 +116,7 @@ const EditorPage = () => {
 
   async function generateAIReview() {
     if (!codeRef.current) {
-      toast.error("No code available to Fix.");
+      toast.error("Write some code first to fix it.");
       return;
     }
     setLoadingReview(true);
@@ -202,52 +125,24 @@ const EditorPage = () => {
         `${process.env.REACT_APP_BACKEND_URL}/api/code-review`,
         { code: codeRef.current, language }
       );
+
       const { review } = response.data;
       if (review) {
-        // Remove markdown code fences and language name if present before setting code
-        let cleanedReview = review
-          .replace(/```[a-zA-Z]*\s*[\r\n]?/g, "")
-          .replace(/```/g, "")
+        const cleanedReview = review
+          .replace(/```[a-zA-Z]*\s*[\r\n]?|```/g, "")
           .trim();
-        // Remove first line if it matches a language name
-        const lines = cleanedReview.split("\n");
-        const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "");
-        let firstLineNormalized = normalize(lines[0]);
-        // Special handling for c++ and c#
-        if (firstLineNormalized === "c") {
-          if (lines[0].toLowerCase().includes("c++")) {
-            firstLineNormalized = "cpp";
-          } else if (lines[0].toLowerCase().includes("c#")) {
-            firstLineNormalized = "csharp";
-          }
-        }
-        const languages = [
-          "javascript",
-          "python",
-          "java",
-          "cpp",
-          "csharp",
-          "ruby",
-          "go",
-          "typescript",
-        ];
-        if (languages.includes(firstLineNormalized)) {
-          lines.shift();
-          cleanedReview = lines.join("\n").trim();
-        }
+
         editorRef.current.setCode(cleanedReview);
         codeRef.current = cleanedReview;
+
         socketRef.current.emit(ACTIONS.CODE_CHANGE, {
           roomId,
           code: cleanedReview,
         });
-        toast.success("AI code Generated.");
-        // Remove markdown code fences if present before setting code
+        toast.success("AI has fixed the code!");
       } else {
         toast.error("No review received from AI.");
       }
-      // Remove markdown code fences and language name if present before setting code
-      // Remove markdown code fences and language name if present before setting code
     } catch (error) {
       console.error("Error generating AI review:", error);
       toast.error("Failed to generate AI code review.");
@@ -262,86 +157,92 @@ const EditorPage = () => {
 
   return (
     <div className="mainWrap">
-      <div className="aside">
+      <div className={`aside ${isSidebarOpen ? "open" : ""}`}>
         <div className="asideInner">
-          <div className="editorlogo">
-            <img className="logo" src="/logo.png" alt="logo" />
+          <div className="logo">
+            <img className="logoImage" src="/logo.png" alt="logo" />
           </div>
           <h3>Connected</h3>
           <div className="clientsList">
-            {console.log("Rendering clients:", clients)}
             {clients.map((client) => (
               <Client key={client.socketId} username={client.username} />
             ))}
           </div>
+        </div>
+        <div className="asideControls">
           <button className="btn copyBtn" onClick={copyRoomId}>
-            Copy ROOM ID
+            Copy Room ID
           </button>
           <button className="btn leaveBtn" onClick={leaveRoom}>
-            Leave
+            Leave Room
           </button>
         </div>
       </div>
+
       <div className="editorWrap">
         <div className="editorHeader">
-          <label
-            htmlFor="languageSelector"
-            style={{ color: "white", marginRight: "8px", alignSelf: "center" }}
-          >
-            Select Language:
-          </label>
-          <select
-            id="languageSelector"
-            className="languageSelector"
-            value={language}
-            onChange={(e) => {
-              const newLang = e.target.value;
-              setLanguage(newLang);
-              console.log("Emitting LANGUAGE_CHANGE with language:", newLang);
-              socketRef.current.emit(ACTIONS.LANGUAGE_CHANGE, {
-                roomId,
-                language: newLang,
-              });
-            }}
-            disabled={loadingReview}
-            aria-label="Select programming language"
-          >
-            <option value="JavaScript">JavaScript</option>
-            <option value="Python">Python</option>
-            <option value="Java">Java</option>
-            <option value="C++">C++</option>
-            <option value="C#">C#</option>
-            <option value="Ruby">Ruby</option>
-            <option value="Go">Go</option>
-            <option value="TypeScript">TypeScript</option>
-          </select>
           <button
-            className="btn aiReviewBtn"
-            onClick={generateAIReview}
-            disabled={loadingReview}
+            className="sidebarToggleBtn"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
-            {loadingReview ? (
-              "Generating Code..."
-            ) : (
-              <>
-                <FontAwesomeIcon
-                  icon={faWandMagicSparkles}
-                  style={{ marginRight: "8px" }}
-                />
-                Fix Code
-              </>
-            )}
+            <FontAwesomeIcon icon={isSidebarOpen ? faTimes : faBars} />
           </button>
+
+          <div className="editorHeaderControls">
+            <div className="languageControl">
+              <label htmlFor="languageSelector">Language:</label>
+              <select
+                id="languageSelector"
+                className="languageSelector"
+                value={language}
+                onChange={(e) => {
+                  const newLang = e.target.value;
+                  setLanguage(newLang);
+                  socketRef.current.emit(ACTIONS.LANGUAGE_CHANGE, {
+                    roomId,
+                    language: newLang,
+                  });
+                }}
+                disabled={loadingReview}
+              >
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="csharp">C#</option>
+                <option value="ruby">Ruby</option>
+                <option value="go">Go</option>
+                <option value="typescript">TypeScript</option>
+              </select>
+            </div>
+
+            <button
+              className="btn aiReviewBtn"
+              onClick={generateAIReview}
+              disabled={loadingReview}
+            >
+              {loadingReview ? (
+                "Generating..."
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faWandMagicSparkles} />
+                  <span>Fix Code</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        <Editor
-          ref={editorRef}
-          socketRef={socketRef}
-          roomId={roomId}
-          language={language} // Pass language as prop
-          onCodeChange={(code) => {
-            codeRef.current = code;
-          }}
-        />
+        <div className="editorContainer">
+          <Editor
+            ref={editorRef}
+            socketRef={socketRef}
+            roomId={roomId}
+            language={language}
+            onCodeChange={(code) => {
+              codeRef.current = code;
+            }}
+          />
+        </div>
       </div>
     </div>
   );

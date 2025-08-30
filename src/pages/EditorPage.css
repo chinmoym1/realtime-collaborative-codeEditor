@@ -1,0 +1,254 @@
+:root {
+    --bg-primary: #101828; /* Deep Navy */
+    --bg-secondary: #1d2939; /* Lighter Navy/Charcoal */
+    --text-primary: #f2f4f7; /* Soft White */
+    --text-secondary: #98a2b3; /* Cool Grey for labels */
+    --border-primary: #344054; /* Subtle Border */
+    --accent-gradient: linear-gradient(100deg, #3672f8, #00a99d);
+    --accent-solid: #3672f8; /* For focus rings, links */
+    --accent-hover: #00a99d; /* For links on hover */
+    --danger: #d92d20; /* For 'leave' button hover */
+  }
+  
+  .mainWrap {
+    display: flex;
+    height: 100vh;
+    font-family: "Inter", sans-serif;
+    background: var(--bg-secondary);
+  }
+  
+  /* ---- Sidebar ---- */
+  .aside {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    width: 250px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: transform 0.3s ease-in-out;
+    border-right: 1px solid var(--border-primary);
+  }
+  
+  .asideInner {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .logo {
+    /* padding-bottom: 1rem; */
+    margin-bottom: 1rem;
+  }
+  
+  .logoImage {
+    height: 70px;
+  }
+  
+  .asideInner h3 {
+    margin-bottom: 1rem;
+    border-top: 1px solid var(--border-primary);
+    padding-top: 1rem;
+  }
+  
+  .clientsList {
+    display: flex;
+    flex-direction: row; /* Arrange items horizontally */
+    flex-wrap: wrap;     /* Allow items to wrap to the next line */
+    gap: 1.25rem;        /* Adjust space between items */
+  }
+  
+  .client {
+    display: flex;
+    flex-direction: column; /* Stack the avatar and username vertically */
+    align-items: center;    /* Center them horizontally */
+    font-weight: bold;
+    min-width: 80px;        /* Give each item a minimum width for better spacing */
+  }
+  
+  .username {
+    margin-top: 0.5rem;   /* Add space between the avatar and username */
+  }
+  
+  /* ---- Scoped Sidebar Buttons ---- */
+  .aside .btn {
+    width: 100%;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: white; /* Base text color for buttons */
+  }
+  
+  .asideControls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* This creates the space between buttons */
+    margin-top: auto; /* Pushes the buttons to the very bottom */
+    padding-top: 1rem; /* Ensures space from the client list above */
+  }
+  
+  .aside .copyBtn {
+    background: var(--accent-gradient);
+  }
+  
+  .aside .leaveBtn {
+    background: var(--bg-secondary);
+  }
+  
+  .aside .copyBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 169, 157, 0.2);
+  }
+  
+  .aside .leaveBtn:hover {
+    background: var(--danger);
+  }
+  
+  /* ---- Editor Area ---- */
+  .editorWrap {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  /* ---- Editor Header ---- */
+  .editorHeader {
+    background: var(--bg-primary);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border-primary);
+  }
+  
+  .editorContainer {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .CodeMirror {
+    height: 100%;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  .editorHeaderControls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .languageControl {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  .languageSelector {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  
+  .languageSelector:focus {
+    border-color: var(--accent-solid);
+  }
+  
+  .aiReviewBtn {
+    background: var(--accent-gradient);
+    color: white;
+    width: auto;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .aiReviewBtn span {
+    margin-left: 8px;
+  }
+  
+  .aiReviewBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 169, 157, 0.2);
+  }
+  
+  .aiReviewBtn:disabled,
+  .aside .btn:disabled {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+  }
+  
+  /* ---- Responsive Design ---- */
+  .sidebarToggleBtn {
+    display: none;
+  }
+  
+  @media (max-width: 768px) {
+    /* Define a consistent header height for mobile */
+    :root {
+      --header-height: 65px;
+    }
+  
+    .aside {
+      position: fixed;
+      /* Start the sidebar BELOW the header */
+      top: var(--header-height);
+      left: 0;
+      /* Make it fill the REMAINING height */
+      height: calc(100% - var(--header-height));
+      z-index: 10;
+      transform: translateX(-100%);
+      box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.2);
+    }
+  
+    .aside.open {
+      transform: translateX(0);
+    }
+  
+    .sidebarToggleBtn {
+      display: block;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 5px;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+  
+    .editorHeader {
+      padding: 0.75rem 1rem;
+      /* Enforce the consistent height */
+      min-height: var(--header-height);
+      box-sizing: border-box; /* Ensures padding is included in the height */
+    }
+  
+    /* We no longer need the extra padding on asideInner */
+    .asideInner {
+      padding-top: 0;
+    }
+  }
