@@ -271,7 +271,7 @@ app.post("/api/code-review", async (req, res) => {
     Here is the code:\n\n${code}\n\nImproved Code:`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
       contents: prompt,
     });
 
