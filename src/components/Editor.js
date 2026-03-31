@@ -183,7 +183,6 @@
 
 // export default Editor;
 
-
 import React, {
   useEffect,
   useRef,
@@ -206,104 +205,127 @@ import "codemirror/addon/hint/javascript-hint.js";
 import "codemirror/addon/hint/show-hint.js";
 import ACTIONS from "../Actions";
 
-const Editor = forwardRef(({ socketRef, roomId, language, onCodeChange }, ref) => {
-  const editorRef = useRef(null);
-  const textAreaRef = useRef(null);
+const Editor = forwardRef(
+  ({ socketRef, roomId, language, onCodeChange }, ref) => {
+    const editorRef = useRef(null);
+    const textAreaRef = useRef(null);
 
-  const getMode = (language) => {
-    switch (language?.toLowerCase()) {
-      case "javascript":
-      case "typescript":
-        return { name: "javascript", json: true };
-      case "python":
-        return "python";
-      case "java":
-        return "text/x-java";
-      case "c++":
-        return "text/x-c++src";
-      case "c#":
-        return "text/x-csharp";
-      case "ruby":
-        return "ruby";
-      case "go":
-        return "go";
-      default:
-        return "javascript";
-    }
-  };
-
-  // Memoized handler to avoid re-renders
-  const handleEditorChange = useCallback(
-    (instance, changes) => {
-      const { origin } = changes;
-      const code = instance.getValue();
-      onCodeChange(code);
-      if (origin !== "setValue") {
-        socketRef.current?.emit(ACTIONS.CODE_CHANGE, { roomId, code });
-      }
-    },
-    [onCodeChange, socketRef, roomId]
-  );
-
-  // Initialize CodeMirror editor once
-  useEffect(() => {
-    if (!textAreaRef.current) return;
-
-    editorRef.current = Codemirror.fromTextArea(textAreaRef.current, {
-      mode: getMode(language),
-      theme: "dracula",
-      autoCloseTags: true,
-      autoCloseBrackets: true,
-      lineNumbers: true,
-      lineWrapping: true,
-    });
-
-    editorRef.current.on("change", handleEditorChange);
-
-    return () => {
-      if (editorRef.current) {
-        editorRef.current.toTextArea();
+    const getMode = (language) => {
+      switch (language?.toLowerCase()) {
+        case "javascript":
+        case "typescript":
+          return { name: "javascript", json: true };
+        case "python":
+          return "python";
+        case "java":
+          return "text/x-java";
+        case "c++":
+          return "text/x-c++src";
+        case "c#":
+          return "text/x-csharp";
+        case "ruby":
+          return "ruby";
+        case "go":
+          return "go";
+        default:
+          return "javascript";
       }
     };
-  }, [handleEditorChange, language]);
 
-  // Socket sync: receive code updates
-  useEffect(() => {
-    const socket = socketRef.current;
-    if (!socket) return;
-
-    const handler = ({ code }) => {
-      if (editorRef.current && code !== null) {
-        const current = editorRef.current.getValue();
-        if (current !== code) {
-          editorRef.current.setValue(code);
+    // Memoized handler to avoid re-renders
+    const handleEditorChange = useCallback(
+      (instance, changes) => {
+        const { origin } = changes;
+        const code = instance.getValue();
+        onCodeChange(code);
+        if (origin !== "setValue") {
+          socketRef.current?.emit(ACTIONS.CODE_CHANGE, { roomId, code });
         }
+      },
+      [onCodeChange, socketRef, roomId]
+    );
+
+    // Initialize CodeMirror editor once
+    useEffect(() => {
+      if (!textAreaRef.current) return;
+
+      editorRef.current = Codemirror.fromTextArea(textAreaRef.current, {
+        mode: getMode(language),
+        theme: "dracula",
+        autoCloseTags: true,
+        autoCloseBrackets: true,
+        lineNumbers: true,
+        lineWrapping: true,
+      });
+
+      editorRef.current.on("change", handleEditorChange);
+
+      return () => {
+        if (editorRef.current) {
+          editorRef.current.toTextArea();
+        }
+      };
+    }, [handleEditorChange, language]);
+
+    // Socket sync: receive code updates
+    useEffect(() => {
+      const socket = socketRef.current;
+      if (!socket) return;
+
+      const handler = ({ code }) => {
+        if (editorRef.current && code !== null) {
+          const current = editorRef.current.getValue();
+          if (current !== code) {
+            // 1. Save cursor and scroll position
+            const cursor = editorRef.current.getCursor();
+            const scrollInfo = editorRef.current.getScrollInfo();
+
+            // 2. Set the new code
+            editorRef.current.setValue(code);
+
+            // 3. Restore cursor and scroll position
+            editorRef.current.setCursor(cursor);
+            editorRef.current.scrollTo(scrollInfo.left, scrollInfo.top);
+          }
+        }
+      };
+
+      socket.on(ACTIONS.CODE_CHANGE, handler);
+      return () => {
+        socket.off(ACTIONS.CODE_CHANGE, handler);
+      };
+    }, [socketRef]);
+
+    // Update language mode dynamically
+    useEffect(() => {
+      if (editorRef.current && language) {
+        editorRef.current.setOption("mode", getMode(language));
       }
-    };
+    }, [language]);
 
-    socket.on(ACTIONS.CODE_CHANGE, handler);
-    return () => {
-      socket.off(ACTIONS.CODE_CHANGE, handler);
-    };
-  }, [socketRef]);
+    // Allow parent to set code
+    useImperativeHandle(ref, () => ({
+      setCode: (code) => {
+        if (editorRef.current) {
+          const current = editorRef.current.getValue();
+          if (current !== code) {
+            // 1. Save cursor and scroll position
+            const cursor = editorRef.current.getCursor();
+            const scrollInfo = editorRef.current.getScrollInfo();
 
-  // Update language mode dynamically
-  useEffect(() => {
-    if (editorRef.current && language) {
-      editorRef.current.setOption("mode", getMode(language));
-    }
-  }, [language]);
+            // 2. Set the new code
+            editorRef.current.setValue(code);
 
-  // Allow parent to set code
-  useImperativeHandle(ref, () => ({
-    setCode: (code) => {
-      if (editorRef.current) {
-        editorRef.current.setValue(code);
-      }
-    },
-  }));
+            // 3. Restore cursor and scroll position
+            editorRef.current.setCursor(cursor);
+            editorRef.current.scrollTo(scrollInfo.left, scrollInfo.top);
+          }
+        }
+      },
+    }));
 
-  return <textarea id="realtimeEditor" ref={textAreaRef}></textarea>;
-});
+    return <textarea id="realtimeEditor" ref={textAreaRef}></textarea>;
+  }
+);
 
 export default Editor;
